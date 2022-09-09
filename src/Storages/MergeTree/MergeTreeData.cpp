@@ -2083,6 +2083,25 @@ size_t MergeTreeData::clearEmptyParts()
     return cleared_count;
 }
 
+size_t MergeTreeData::clearExpiredParts()
+{
+    size_t cleared_count = 0;
+    if (getSettings()->ttl_only_drop_parts && getInMemoryMetadataPtr()->hasRowsTTL())
+    {
+        time_t current_time = std::time(nullptr);
+        auto parts = getDataPartsVectorForInternalUsage();
+        for (const auto & part : parts)
+        {
+            if (part->ttl_infos.hasRowsTTL() && part->ttl_infos.table_ttl.max < current_time)
+            {
+                dropPartNoWaitNoThrow(part->name);
+                ++cleared_count;
+            }
+        }
+    }
+    return cleared_count;
+}
+
 void MergeTreeData::rename(const String & new_table_path, const StorageID & new_table_id)
 {
     auto disks = getStoragePolicy()->getDisks();

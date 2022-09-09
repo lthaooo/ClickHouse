@@ -302,14 +302,20 @@ SelectPartsDecision MergeTreeDataMergerMutator::selectPartsToMerge(
 
     if (metadata_snapshot->hasAnyTTL() && merge_with_ttl_allowed && !ttl_merges_blocker.isCancelled())
     {
-        /// TTL delete is preferred to recompression
-        TTLDeleteMergeSelector delete_ttl_selector(
-                next_delete_ttl_merge_times_by_partition,
-                current_time,
-                data_settings->merge_with_ttl_timeout,
-                data_settings->ttl_only_drop_parts);
+        // will drop part in clearExpiredParts()
+        bool drop_part_without_merge = data_settings->ttl_only_drop_parts && metadata_snapshot->hasRowsTTL();
+        if (!drop_part_without_merge)
+        {
+            /// TTL delete is preferred to recompression
+            TTLDeleteMergeSelector delete_ttl_selector(
+                    next_delete_ttl_merge_times_by_partition,
+                    current_time,
+                    data_settings->merge_with_ttl_timeout,
+                    data_settings->ttl_only_drop_parts);
 
-        parts_to_merge = delete_ttl_selector.select(parts_ranges, max_total_size_to_merge);
+            parts_to_merge = delete_ttl_selector.select(parts_ranges, max_total_size_to_merge);
+        }
+
         if (!parts_to_merge.empty())
         {
             future_part->merge_type = MergeType::TTLDelete;

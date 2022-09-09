@@ -630,6 +630,8 @@ public:
 
     size_t clearEmptyParts();
 
+    size_t clearExpiredParts();
+
     /// After the call to dropAllData() no method can be called.
     /// Deletes the data directory and flushes the uncompressed blocks cache and the marks cache.
     void dropAllData();

@@ -77,6 +77,7 @@ void ReplicatedMergeTreeCleanupThread::iterate()
         clearOldBlocks();
         clearOldMutations();
         storage.clearEmptyParts();
+        storage.clearExpiredParts();
     }
 }
 

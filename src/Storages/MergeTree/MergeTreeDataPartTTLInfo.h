@@ -71,6 +71,11 @@ struct MergeTreeDataPartTTLInfos
         /// part_min_ttl in minimum of rows, rows_where and group_by TTLs
         return !part_min_ttl && moves_ttl.empty() && recompression_ttl.empty() && columns_ttl.empty();
     }
+
+    bool hasRowsTTL() const
+    {
+        return table_ttl.min && table_ttl.max;
+    }
 };
 
 /// Selects the most appropriate TTLDescription using TTL info and current time.
